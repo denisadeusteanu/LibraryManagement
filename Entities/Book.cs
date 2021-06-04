@@ -2,61 +2,34 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using System.ComponentModel.DataAnnotations;
+using Library.CustomAttributes;
 
-namespace Library
+namespace Library.Entities
 {
-    class Book
+    public class Book
     {
         private Guid Id { get; set; }
+
+        [NotNullOrWhiteSpaceValidatorAttribute]
         public string Name { get; set; }
+
+        [NotNullOrWhiteSpaceValidatorAttribute]
         public string Author { get; set; }
+
+        [NotNullOrWhiteSpaceValidatorAttribute]
         public string ISBN { get; set; }
+
+        [NotNullOrWhiteSpaceValidatorAttribute]
         public decimal? Price { get; set; }
-        private int NrCopies { get; set; }
+
         public Boolean IsBorrowed { get; set; }
 
-        public Book(string name, string iSBN, decimal price, int nrCopies = 1, bool isBorrowed = false)
+        public Book( bool isBorrowed = false)
         {
             Id = Guid.NewGuid();
-            Name = name;
-            ISBN = iSBN;
-            Price = price;
-            NrCopies = nrCopies;
             IsBorrowed = isBorrowed;
         }
-
-        public Book(int nrCopies = 1, bool isBorrowed = false)
-        {
-            Id = Guid.NewGuid();
-            NrCopies = nrCopies;
-            IsBorrowed = isBorrowed;
-        }
-
-        public override bool Equals(object obj)
-        {
-            return Equals(obj as Book);
-        }
-
-        public bool Equals(Book book)
-        {
-            return book != null &&
-                   Name == book.Name &&
-                   ISBN == book.ISBN &&
-                   Price == book.Price;
-        }
-
-        public bool IsCopyOfExistingBook(Book book, List<Book> bookList)
-        {
-            foreach (var b in bookList)
-                if (book.Equals(b)) return true;
-
-            return false;
-        }
-
-        //public void AddCopyOfExistinhBook(Book book)
-        //{
-        //    book.NrCopies++;
-        //}
 
         public static void getAllBooks(List<Book> bookList)
         {

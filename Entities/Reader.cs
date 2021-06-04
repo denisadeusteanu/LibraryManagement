@@ -1,13 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Library.CustomAttributes;
 
 namespace Library.Entities
 {
     class Reader
     {
         private Guid Id { get; set; }
+
+        [NotNullOrWhiteSpaceValidatorAttribute]
         public string FirstName { get; set; }
+
+        [NotNullOrWhiteSpaceValidatorAttribute]
         public string LastName { get; set; }
 
         public Reader(string firstName, string lastName)
@@ -20,18 +25,6 @@ namespace Library.Entities
         public Reader()
         {
             Id = Guid.NewGuid();
-        }
-
-        public override bool Equals(object obj)
-        {
-            return Equals(obj as Reader);
-        }
-
-        public bool Equals(Reader reader)
-        {
-            return reader != null &&
-                   FirstName == reader.FirstName &&
-                   LastName == reader.LastName;
         }
     }
 }

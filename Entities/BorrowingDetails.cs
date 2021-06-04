@@ -19,22 +19,27 @@ namespace Library.Entities
             DateBorrowed = DateTime.Today;
         }
 
-        public decimal? CalculateFee(BorrowingDetails borrowingDetails)
+        public decimal? CalculateFee()
         {
-            var borrowingfee = (decimal?)(borrowingDetails.Book.Price * 0.1m * (decimal)(borrowingDetails.DateBorrowed - DateTime.Today).TotalDays);
+            var numberOfLateDays = (decimal)System.Math.Round((this.DateBorrowed - DateTime.Today).TotalDays - 14d);
+            var borrowingfee = (decimal?)(this.Book.Price * 0.01m * numberOfLateDays);
             return borrowingfee;
         }
 
-        public bool CheckIfBorrowingFeeExists(string ISBN, string firstName, string LastName, List<BorrowingDetails> borrowingDetailsList)
+        public bool CheckIfBorrowingFeeExists()
         {
-            var borrowingDetails = borrowingDetailsList.Where(borrowingDetails => borrowingDetails.Book.ISBN == ISBN &&
-                                                                                  borrowingDetails.Reader.FirstName == firstName &&
-                                                                                  borrowingDetails.Reader.LastName == LastName).FirstOrDefault();
-
-            var nuumberOfdaysTillRestore = (borrowingDetails.DateBorrowed - DateTime.Today).TotalDays;
-            if (nuumberOfdaysTillRestore > 14) return true;
+            var numberOfdaysTillRestore = (this.DateBorrowed - DateTime.Today).TotalDays;
+            if (numberOfdaysTillRestore > 14) return true;
 
             return false;
+        }
+
+        public static BorrowingDetails GetBorrowingDetails(string firstName, string lastName,string name, string author, List<BorrowingDetails> borrowingDetailsList)
+        {
+            var borrowingDetails = borrowingDetailsList.Where(borrowingDetails => borrowingDetails.Reader.FirstName == firstName && borrowingDetails.Reader.LastName == lastName
+                                                                                 && borrowingDetails.Book.Name == name && borrowingDetails.Book.Author == author
+                                                                                 && borrowingDetails.Book.IsBorrowed).FirstOrDefault();
+            return borrowingDetails;
         }
     }
 }

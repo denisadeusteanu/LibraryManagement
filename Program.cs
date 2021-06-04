@@ -1,12 +1,15 @@
 ﻿using Library.Entities;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Library
 {
-    class Program
+    public class Program
     {
         static void Main(string[] args)
         {
@@ -72,17 +75,23 @@ namespace Library
             var name = Console.ReadLine();
             Console.Write("Book Author:");
             var author = Console.ReadLine();
-            var borrowingDetailsToRestore = borrowingList.Where(borrowingDetails => borrowingDetails.Reader.FirstName == firstName && borrowingDetails.Reader.LastName == lastName
-                                                                                 && borrowingDetails.Book.Name == name && borrowingDetails.Book.Author == author
-                                                                                 && borrowingDetails.Book.IsBorrowed).FirstOrDefault();
-            if (borrowingDetailsToRestore == null)
+            var borrowingDetails = BorrowingDetails.GetBorrowingDetails(firstName, lastName, name, author, borrowingList);
+            if (borrowingDetails == null)
             {
                 Console.WriteLine("This book does not exist!");
                 return;
             }
-            borrowingDetailsToRestore.Book.RestoreBook();
-            borrowingList.Remove(borrowingDetailsToRestore);
-            Console.WriteLine(borrowingDetailsToRestore.Book.ToString() + " was restored succesfully!");
+            if (borrowingDetails.CheckIfBorrowingFeeExists())
+            {
+                var fee = System.Math.Round((decimal)borrowingDetails.CalculateFee(),2);
+                Console.WriteLine($"You have to pay {fee}", fee);
+            }
+
+
+
+            borrowingDetails.Book.RestoreBook();
+            borrowingList.Remove(borrowingDetails);
+            Console.WriteLine(borrowingDetails.Book.ToString() + " was restored succesfully!");
         }
 
         private static void Borrow(List<Book> bookList, List<BorrowingDetails> borrowingList, List<Reader> readersList)
@@ -111,7 +120,7 @@ namespace Library
             Console.WriteLine(bookToBorrow.ToString() + " was borrowed succesfully!");
         }
 
-        private static void EnterBookAndGetNrOfCopies(List<Book> bookList)
+        public static void EnterBookAndGetNrOfCopies(List<Book> bookList)
         {
             Console.Write("Book Name:");
             var name = Console.ReadLine();
@@ -128,9 +137,10 @@ namespace Library
             Console.Write("Book {0} by {1} is in {2} copies", name, author, nrOfCopies);
         }
 
-        private static void AddNewBook(List<Book> bookList)
+        public static void AddNewBook(List<Book> bookList)
         {
             Book book = new Book();
+            var results = new Collection<ValidationResult>();
             Console.Write("Book Name:");
             book.Name = Console.ReadLine();
 
@@ -146,7 +156,7 @@ namespace Library
 
             Console.Write("Book Price:");
             decimal price;
-            if (Decimal.TryParse(Console.ReadLine(), out price))
+            if (Decimal.TryParse(Console.ReadLine(), out price) && price > 0)
                 book.Price = price;
             else
             {
@@ -156,8 +166,18 @@ namespace Library
 
             Console.Write("Book ISBN:");
             book.ISBN = Console.ReadLine();
-            bookList.Add(book);
-            Console.WriteLine("You added a new book successfully!");
+
+            if (!Validator.TryValidateObject(book, new ValidationContext(book), results, true))
+            {
+                Console.WriteLine($"{results[0].ErrorMessage}");
+            };
+
+            if (results.Count() == 0)
+            {
+                results.Clear();
+                bookList.Add(book);
+                Console.WriteLine("You added a new book successfully!");
+            }
         }
     }
 }
